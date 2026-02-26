@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Día Actual</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --text: #111827;
+      --tabla-borde: #d1d5db;
+      --th-bg: #f3f4f6;
+      --td-bg: #ffffff;
+      --modal-bg: #ffffff;
+      --overlay: rgba(0, 0, 0, 0.45);
+      --btn-cerrar-bg: #e5e7eb;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --text: #f9fafb;
+        --tabla-borde: #374151;
+        --th-bg: #1f2937;
+        --td-bg: #111827;
+        --modal-bg: #1f2937;
+        --overlay: rgba(0, 0, 0, 0.6);
+        --btn-cerrar-bg: #374151;
+      }
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100dvh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      text-align: center;
+      animation: pulsoTitulo 2.4s ease-in-out infinite;
+    }
+
+    #botonHome {
+      display: block;
+      margin: 0;
+      padding: 20px 40px;
+      font-size: 24px;
+      border: 0;
+      border-radius: 2px;
+      background: #16a34a;
+      color: #fff;
+      cursor: pointer;
+      animation: latidoBoton 2.4s ease-in-out infinite;
+    }
+
+    #homeAccion {
+      position: relative;
+      display: inline-block;
+      margin-top: 22px;
+    }
+
+    #homeAccion.oculto {
+      visibility: hidden;
+    }
+
+    #monaChina {
+      position: absolute;
+      left: calc(50% - 8px);
+      bottom: 100%;
+      width: 150px;
+      height: 150px;
+      transform: translateX(-50%);
+      object-fit: contain;
+      filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.25));
+      pointer-events: none;
+      z-index: 2;
+      animation: flotarMona 2.4s ease-in-out infinite;
+    }
+
+    #botonEsquina {
+      position: fixed;
+      left: 16px;
+      top: 16px;
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 8px;
+      background: #1f6feb;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    #retoAnimacion {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #16a34a;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #olaEstanque {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+    }
+
+    #olaEstanque.activo {
+      opacity: 1;
+    }
+
+    #olaEstanque .onda {
+      position: absolute;
+      left: var(--ola-x, 50vw);
+      top: var(--ola-y, 50vh);
+      width: 12px;
+      height: 12px;
+      border: 3px solid rgba(56, 189, 248, 0.55);
+      border-radius: 999px;
+      transform: translate(-50%, -50%) scale(0.1);
+      opacity: 0;
+      box-shadow: 0 0 22px rgba(56, 189, 248, 0.28);
+    }
+
+    #olaEstanque.activo .onda {
+      animation: ondaEstanque 5s ease-out forwards;
+    }
+
+    #olaEstanque .onda:nth-child(2) {
+      animation-delay: 0.35s;
+    }
+
+    #olaEstanque .onda:nth-child(3) {
+      animation-delay: 0.7s;
+    }
+
+    #olaEstanque .onda:nth-child(4) {
+      animation-delay: 1.05s;
+    }
+
+    #retoAnimacion.activo {
+      animation: logroReto 1.2s ease;
+    }
+
+    @keyframes logroReto {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px) scale(0.95);
+      }
+      25% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1.02);
+      }
+      75% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px) scale(0.98);
+      }
+    }
+
+    @keyframes pulsoTitulo {
+      0% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-4px);
+      }
+      100% {
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes latidoBoton {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.04);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    @keyframes flotarMona {
+      0% {
+        transform: translateX(-50%) translateY(8px);
+      }
+      50% {
+        transform: translateX(-50%) translateY(2px);
+      }
+      100% {
+        transform: translateX(-50%) translateY(8px);
+      }
+    }
+
+    @keyframes ondaEstanque {
+      0% {
+        transform: translate(-50%, -50%) scale(0.1);
+        opacity: 0.75;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(24);
+        opacity: 0;
+      }
+    }
+
+    #modalFondo {
+      position: fixed;
+      inset: 0;
+      background: var(--overlay);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      z-index: 40;
+    }
+
+    #modalVentana {
+      width: min(760px, 100%);
+      max-height: 85vh;
+      overflow: auto;
+      background: var(--modal-bg);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    #tablaExcel {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      table-layout: fixed;
+    }
+
+    #tablaExcel th,
+    #tablaExcel td {
+      border: 1px solid var(--tabla-borde);
+      padding: 6px;
+      height: 34px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    #tablaExcel th {
+      background: var(--th-bg);
+      font-weight: 600;
+      text-align: center;
+    }
+
+    #tablaExcel td {
+      background: var(--td-bg);
+    }
+
+    .diaSemana {
+      background: #dc2626 !important;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .diaActualMenu {
+      background: #16a34a !important;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    #tablaExcel tbody tr.filaTotalDinamica th,
+    #tablaExcel tbody tr.filaTotalDinamica td {
+      background: #fff7cc;
+      color: #111827;
+      font-weight: 700;
+      animation: parpadeoTotal 1s infinite;
+    }
+
+    @keyframes parpadeoTotal {
+      0% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.35;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    #cerrarModal {
+      margin-top: 12px;
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 6px;
+      background: var(--btn-cerrar-bg);
+      color: var(--text);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="diaActual"></h1>
+  <div id="homeAccion">
+    <img id="monaChina" src="mona-china.png" alt="Mona china sentada de lado">
+    <button id="botonHome">Boton Home</button>
+  </div>
+  <button id="botonEsquina">Boton</button>
+  <div id="olaEstanque">
+    <span class="onda"></span>
+    <span class="onda"></span>
+    <span class="onda"></span>
+    <span class="onda"></span>
+  </div>
+  <div id="retoAnimacion">Estamos logrando el reto</div>
+  <div id="modalFondo">
+    <div id="modalVentana">
+      <table id="tablaExcel">
+        <thead>
+          <tr>
+            <th></th>
+            <th>A</th>
+            <th>B</th>
+            <th>C</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>1</th>
+            <td class="diaSemana">Lunes</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>2</th>
+            <td class="diaSemana">Martes</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>3</th>
+            <td class="diaSemana">Miercoles</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>4</th>
+            <td class="diaSemana">Jueves</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>5</th>
+            <td class="diaSemana">Viernes</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>6</th>
+            <td class="diaSemana">Sabado</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>7</th>
+            <td class="diaSemana">Domingo</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>8</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>9</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>10</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>11</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>12</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>13</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>14</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>15</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>16</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>17</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>18</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>19</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>20</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>21</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>22</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>23</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>24</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>25</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>26</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>27</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>28</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>29</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>30</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>31</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>32</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>33</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>34</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>35</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>36</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>37</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>38</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>39</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>40</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>41</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>42</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>43</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>44</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>45</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>46</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>47</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>48</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>49</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>50</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>51</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>52</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>53</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>54</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>55</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>56</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>57</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>58</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>59</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>60</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>61</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>62</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>63</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>64</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>65</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>66</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>67</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>68</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>69</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>70</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>71</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>72</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>73</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>74</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>75</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>76</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>77</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>78</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>79</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>80</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>81</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>82</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>83</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>84</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>85</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>86</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>87</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>88</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>89</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>90</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>91</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>92</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>93</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>94</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>95</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>96</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>97</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>98</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>99</th>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+      <button id="cerrarModal">Cerrar</button>
+    </div>
+  </div>
+
+  <script>
+    const diasSemana = {
+      lunes:     50000,
+      martes:    40000,
+      miercoles: 40000,
+      jueves:    50000,
+      viernes:   40000,
+      sabado:    40000,
+      domingo:   40000
+    };
+
+    const nombresDias = [
+      "domingo","lunes","martes",
+      "miercoles","jueves","viernes","sabado"
+    ];
+
+    const hoy = new Date();
+    const diaActual = nombresDias[hoy.getDay()];
+    const KEY_TOTAL = "totalAcumuladoDias";
+    const KEY_FECHA_ULTIMA_SUMA = "fechaUltimaSuma";
+    const KEY_ESCENARIO_CARGADO = "escenarioDomLunMarMieCargado";
+    const KEY_PRESIONES_COUNT = "presionesCount";
+
+    document.getElementById("diaActual").textContent = diaActual.charAt(0).toUpperCase() + diaActual.slice(1);
+
+    function obtenerFechaLocalISO() {
+      const ahora = new Date();
+      const anio = ahora.getFullYear();
+      const mes = String(ahora.getMonth() + 1).padStart(2, "0");
+      const dia = String(ahora.getDate()).padStart(2, "0");
+      return `${anio}-${mes}-${dia}`;
+    }
+
+    function obtenerPrecioDiaActual() {
+      return Number(diasSemana[diaActual] || 0);
+    }
+
+    function formatearPrecio(valor) {
+      return new Intl.NumberFormat("es-CO", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(Number(valor || 0));
+    }
+
+    function obtenerConteoPresiones() {
+      return Number(localStorage.getItem(KEY_PRESIONES_COUNT) || 0);
+    }
+
+    function guardarConteoPresiones(valor) {
+      localStorage.setItem(KEY_PRESIONES_COUNT, String(valor));
+    }
+
+    function mostrarTotalGuardado() {
+      const totalGuardado = Number(localStorage.getItem(KEY_TOTAL) || 0);
+      const filasTabla = document.querySelectorAll("#tablaExcel tbody tr");
+      const conteoPresiones = obtenerConteoPresiones();
+      const indiceFilaTotal = Math.max(1, Math.min(99, conteoPresiones + 1));
+
+      filasTabla.forEach((fila) => {
+        const celdas = fila.querySelectorAll("td");
+        if (celdas.length < 2) {
+          return;
+        }
+        fila.classList.remove("filaTotalDinamica");
+      });
+
+      const filaTotal = filasTabla[indiceFilaTotal - 1];
+      if (!filaTotal) {
+        return;
+      }
+
+      const celdasTotal = filaTotal.querySelectorAll("td");
+      if (celdasTotal.length < 2) {
+        return;
+      }
+
+      filaTotal.classList.add("filaTotalDinamica");
+      celdasTotal[0].classList.remove("diaSemana", "diaActualMenu");
+      celdasTotal[0].textContent = "Total";
+      celdasTotal[1].textContent = formatearPrecio(totalGuardado);
+    }
+
+    function cargarEscenarioSolicitado() {
+      const yaCargado = localStorage.getItem(KEY_ESCENARIO_CARGADO);
+
+      if (yaCargado === "1") {
+        if (obtenerConteoPresiones() === 0) {
+          guardarConteoPresiones(4);
+        }
+        return;
+      }
+
+      const totalEscenario =
+        diasSemana.domingo +
+        diasSemana.lunes +
+        diasSemana.martes +
+        diasSemana.miercoles;
+
+      localStorage.setItem(KEY_TOTAL, String(totalEscenario));
+      localStorage.setItem(KEY_FECHA_ULTIMA_SUMA, obtenerFechaLocalISO());
+      guardarConteoPresiones(4);
+      localStorage.setItem(KEY_ESCENARIO_CARGADO, "1");
+    }
+
+    function sumarSoloUnaVezPorDia() {
+      const fechaHoy = obtenerFechaLocalISO();
+      const ultimaFecha = localStorage.getItem(KEY_FECHA_ULTIMA_SUMA);
+      if (ultimaFecha === fechaHoy) {
+        return;
+      }
+
+      const totalActual = Number(localStorage.getItem(KEY_TOTAL) || 0);
+      const precioHoy = obtenerPrecioDiaActual();
+      const nuevoTotal = totalActual + precioHoy;
+      const conteoActual = obtenerConteoPresiones();
+      guardarConteoPresiones(Math.min(99, conteoActual + 1));
+
+      localStorage.setItem(KEY_TOTAL, String(nuevoTotal));
+      localStorage.setItem(KEY_FECHA_ULTIMA_SUMA, fechaHoy);
+    }
+
+    cargarEscenarioSolicitado();
+
+    function cargarPreciosYMarcarDiaActual() {
+      const diasCiclo = [
+        "domingo",
+        "lunes",
+        "martes",
+        "miercoles",
+        "jueves",
+        "viernes",
+        "sabado"
+      ];
+      const conteoPresiones = obtenerConteoPresiones();
+      const filasTabla = document.querySelectorAll("#tablaExcel tbody tr");
+      let indiceDia = 0;
+      let indiceFilaDia = 0;
+
+      filasTabla.forEach((fila) => {
+        const celdas = fila.querySelectorAll("td");
+        if (celdas.length < 2) {
+          return;
+        }
+
+        const textoActual = celdas[0].textContent.trim().toLowerCase();
+        if (textoActual !== "total") {
+          const nombreCiclo = diasCiclo[indiceDia % diasCiclo.length];
+          celdas[0].textContent = nombreCiclo.charAt(0).toUpperCase() + nombreCiclo.slice(1);
+          celdas[0].classList.add("diaSemana");
+          indiceFilaDia += 1;
+          indiceDia += 1;
+        } else {
+          celdas[0].classList.remove("diaSemana");
+        }
+
+        const nombreDia = celdas[0].textContent.trim().toLowerCase();
+        celdas[0].classList.remove("diaActualMenu");
+        if (diasSemana[nombreDia] !== undefined) {
+          celdas[1].textContent = formatearPrecio(diasSemana[nombreDia]);
+        }
+        if (nombreDia !== "total" && indiceFilaDia <= conteoPresiones) {
+          celdas[0].classList.add("diaActualMenu");
+        }
+      });
+      mostrarTotalGuardado();
+    }
+
+    function mostrarFilaDiaActual() {
+      const filasTabla = document.querySelectorAll("#tablaExcel tbody tr");
+      const conteoPresiones = obtenerConteoPresiones();
+      let indiceFilaDia = 0;
+      filasTabla.forEach((fila) => {
+        const celdaDia = fila.querySelector("td");
+        if (!celdaDia) {
+          return;
+        }
+        const nombreDia = celdaDia.textContent.trim().toLowerCase();
+        if (nombreDia === "total") {
+          return;
+        }
+        indiceFilaDia += 1;
+        if (indiceFilaDia === conteoPresiones) {
+          fila.scrollIntoView({ block: "center", behavior: "smooth" });
+        }
+      });
+    }
+
+    const botonEsquina = document.getElementById("botonEsquina");
+    const botonHome = document.getElementById("botonHome");
+    const homeAccion = document.getElementById("homeAccion");
+    const olaEstanque = document.getElementById("olaEstanque");
+    const modalFondo = document.getElementById("modalFondo");
+    const cerrarModal = document.getElementById("cerrarModal");
+    const retoAnimacion = document.getElementById("retoAnimacion");
+    let timerAnimacionReto = null;
+    let timerOla = null;
+
+    function mostrarAnimacionReto() {
+      retoAnimacion.classList.remove("activo");
+      void retoAnimacion.offsetWidth;
+      retoAnimacion.classList.add("activo");
+      if (timerAnimacionReto) {
+        clearTimeout(timerAnimacionReto);
+      }
+      timerAnimacionReto = setTimeout(() => {
+        retoAnimacion.classList.remove("activo");
+      }, 1200);
+    }
+
+    function mostrarOlaEstanque(evento) {
+      const x = evento?.clientX ?? window.innerWidth / 2;
+      const y = evento?.clientY ?? window.innerHeight / 2;
+
+      olaEstanque.style.setProperty("--ola-x", `${x}px`);
+      olaEstanque.style.setProperty("--ola-y", `${y}px`);
+      olaEstanque.classList.remove("activo");
+      void olaEstanque.offsetWidth;
+      olaEstanque.classList.add("activo");
+
+      if (timerOla) {
+        clearTimeout(timerOla);
+      }
+      timerOla = setTimeout(() => {
+        olaEstanque.classList.remove("activo");
+      }, 5000);
+    }
+
+    botonEsquina.addEventListener("click", (e) => {
+      mostrarOlaEstanque(e);
+      mostrarAnimacionReto();
+      sumarSoloUnaVezPorDia();
+      cargarPreciosYMarcarDiaActual();
+      homeAccion.classList.add("oculto");
+      modalFondo.style.display = "flex";
+      mostrarFilaDiaActual();
+    });
+
+    botonHome.addEventListener("click", (e) => {
+      mostrarOlaEstanque(e);
+      mostrarAnimacionReto();
+    });
+
+    cerrarModal.addEventListener("click", () => {
+      homeAccion.classList.remove("oculto");
+      modalFondo.style.display = "none";
+    });
+
+    modalFondo.addEventListener("click", (e) => {
+      if (e.target === modalFondo) {
+        homeAccion.classList.remove("oculto");
+        modalFondo.style.display = "none";
+      }
+    });
+  </script>
+
+</body>
+</html>
+
+
+
